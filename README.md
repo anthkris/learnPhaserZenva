@@ -1,3 +1,3 @@
 # learnPhaserZenva
 
-This repo has the code used for learning and building the Space Hipster game.
+This repo has the code used for learning and building the Zenva Phaser games.repo
