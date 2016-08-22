@@ -42,19 +42,23 @@ SpaceHipster.GameState = {
     this.shootingTimer = this.game.time.events.loop(Phaser.Timer.SECOND/5, this.createPlayerBullet, this);
     
     // enemy
-    var enemy = new SpaceHipster.Enemy(this.game, 100, 100, 'greenEnemy', 10, []);
-    this.game.add.existing(enemy);
+    this.initEnemies();
+    
+    // load levels
+    this.loadLevel();
     
   },
   update: function() {
+    this.game.physics.arcade.overlap(this.playerBullets, this.enemies, this.damageEnemy, null, this);
+    this.game.physics.arcade.overlap(this.enemyBullets, this.player, this.damagePlayer, null, this);
+    
     this.player.body.velocity.x = 0;
     // check that user is touching down
     if (this.game.input.activePointer.isDown) {
       var targetX = this.game.input.activePointer.position.x;
       // check which side is being touched and set direction variable accordingly
       var direction = targetX >= this.game.world.centerX ? 1: -1;
-      this.player.body.velocity.x = direction * this.PLAYER_SPEED;
-      
+      this.player.body.velocity.x = direction * this.PLAYER_SPEED; 
     }
   },
   initBullets: function() {
@@ -73,6 +77,109 @@ SpaceHipster.GameState = {
     
     // set velocity
     bullet.body.velocity.y = this.BULLET_SPEED;
+  },
+  initEnemies: function() {
+    this.enemies = this.add.group();
+//     this.enemies.enableBody = true;
+    
+    this.enemyBullets = this.add.group();
+    this.enemyBullets.enableBody = true;
+    
+ //   var enemy = new SpaceHipster.Enemy(this.game, 100, 100, 10, 'greenEnemy', this.enemyBullets, 2, 100);
+ //   this.enemies.add(enemy);
+//     enemy.body.velocity.x = 100;
+//     enemy.body.velocity.y = 50;
+  },
+  damageEnemy: function(bullet, enemy) {
+    enemy.damage(1);
+    bullet.kill();
+  },
+  damagePlayer: function(){
+    this.player.kill();
+    this.game.state.start('GameState');
+  },
+  createEnemy: function(x, y, health, key, scale, speedX, speedY, shootFreq, bulletVelocity){
+  
+    var enemy = this.enemies.getFirstExists(false);
+   
+    if (!enemy) {
+      enemy = new SpaceHipster.Enemy(this.game, x, y, health, key, this.enemyBullets, shootFreq, bulletVelocity);
+      this.enemies.add(enemy);
+    }
+    
+    enemy.reset(x, y, health, key, scale, speedX, speedY);
+  },
+  loadLevel: function() {
+    
+    this.currentEnemyIndex = 0;
+    
+    this.levelData = {
+    "duration": 35,
+    "enemies": 
+    [
+      {
+        "time": 1,
+        "x": 0.05,
+        "health": 6,
+        "speedX": 20, 
+        "speedY": 50,
+        "key": "greenEnemy",
+        "scale": 3,
+        "shootFreq": 2,
+        "bulletVelocity": 100
+      },
+      {
+        "time": 2,
+        "x": 0.1,
+        "health": 3,
+        "speedX": 50, 
+        "speedY": 50,
+        "key": "greenEnemy",
+        "scale": 1,
+        "shootFreq": 2,
+        "bulletVelocity": 100
+      },
+      {
+        "time": 3,
+        "x": 0.1,
+        "health": 3,
+        "speedX": 50, 
+        "speedY": 50,
+        "key": "greenEnemy",
+        "scale": 1,
+        "shootFreq": 2,
+        "bulletVelocity": 100
+      },
+      {
+        "time": 4,
+        "x": 0.1,
+        "health": 3,
+        "speedX": 50, 
+        "speedY": 50,
+        "key": "greenEnemy",
+        "scale": 1,
+        "shootFreq": 2,
+        "bulletVelocity": 100
+      }]
+    };
+    
+    this.scheduleNextEnemy();
+    
+  },
+  
+  scheduleNextEnemy: function() {
+    var nextEnemy = this.levelData.enemies[this.currentEnemyIndex];
+    console.log(nextEnemy);
+    if (nextEnemy) {
+      var nextTime = 1000 * ( nextEnemy.time - (this.currentEnemyIndex === 0 ? 0 : this.levelData.enemies[this.currentEnemyIndex - 1].time));
+      
+      this.nextEnemyTimer = this.game.time.events.add(nextTime, function() {
+        this.createEnemy((nextEnemy.x * this.game.world.width), -100, nextEnemy.health, nextEnemy.key, nextEnemy.scale, nextEnemy.speedX, nextEnemy.speedY, nextEnemy.shootFreq, nextEnemy.bulletVelocity);
+        
+        this.currentEnemyIndex++;
+        this.scheduleNextEnemy();
+      }, this);
+    }
   }
 
 };
