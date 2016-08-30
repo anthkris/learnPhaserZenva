@@ -91,7 +91,7 @@ SpaceHipster.Enemy.prototype.reset = function(x, y, health, key, scale, speedX, 
   this.scale.setTo(scale);
   this.body.velocity.x = speedX;
   this.body.velocity.y = speedY;
-  console.log(speedY);
+  //console.log(speedY);
   
   
   this.enemyTimer.resume();
