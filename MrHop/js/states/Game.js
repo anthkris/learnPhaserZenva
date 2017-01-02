@@ -56,7 +56,7 @@ MrHop.GameState = {
     this.water.autoScroll(this.levelSpeed/2, 0);
     
     this.coinSound = this.add.audio('coin');
-    
+    this.gameOverCounter = 0;
     this.loadLevel();
     
     //show number of coins
@@ -104,7 +104,13 @@ MrHop.GameState = {
     
     //check if the player needs to die
     if(this.player.top >= this.game.world.height || this.player.left <= 0) {
-      this.gameOver();
+      //alpha doesn't work when bitmapData sprite is continuously redrawn
+      //so only run gameOver once
+      if(this.gameOverCounter <= 0) {
+        this.gameOver();
+        this.gameOverCounter++;
+      }
+      
     }
   },
   render: function(){
@@ -183,15 +189,15 @@ MrHop.GameState = {
   gameOver: function() {
     this.player.kill();
     this.updateHighScore();
-    
     //game over overlay
-    this.overlay = this.add.bitmapData(this.game.width, this.game.height);
-    this.overlay.ctx.fillStyle = '#000';
+    this.overlay = this.game.add.bitmapData(this.game.width, this.game.height);
+    this.overlay.ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
     this.overlay.ctx.fillRect(0, 0, this.game.width, this.game.height);
-    
     //sprite for the overlay
     this.panel = this.game.add.sprite(0, this.game.height, this.overlay);
-    this.panel.alpha = 0.55;
+    console.log(this.overlay);
+    console.log(this.panel);
+    //this.panel.alpha = 0.55;
     
     //overlay raising tween animation
     var gameOverPanel = this.game.add.tween(this.panel);
