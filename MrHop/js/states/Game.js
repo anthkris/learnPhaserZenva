@@ -9,6 +9,10 @@ MrHop.GameState = {
     //pool of platforms
     this.platformPool = this.add.group();
     
+    //pool of coins
+    this.coinsPool = this.add.group();
+    this.coinsPool.enableBody = true;
+    
     //gravity
     this.game.physics.arcade.gravity.y = 1000; 
     
@@ -27,7 +31,7 @@ MrHop.GameState = {
   create: function() {
  
     //hard-code first platform
-    this.currentPlatform = new MrHop.Platform(this.game, this.floorPool, 12, 0, 200, -this.levelSpeed);
+    this.currentPlatform = new MrHop.Platform(this.game, this.floorPool, 12, 0, 200, -this.levelSpeed, this.coinsPool);
     this.platformPool.add(this.currentPlatform);
     
     this.loadLevel();
@@ -69,6 +73,13 @@ MrHop.GameState = {
     if(this.currentPlatform.length && this.currentPlatform.children[this.currentPlatform.length - 1].right < this.game.world.width) {
       this.createPlatform();
     }
+    
+    //kill coins that leave the screen
+    this.coinsPool.forEachAlive(function(coin){
+      if (coin.right <= 0){
+        coin.kill();
+      }
+    }, this);
   },
   render: function(){
     //this.game.debug.body(this.player);
@@ -104,10 +115,10 @@ MrHop.GameState = {
        this.currentPlatform = this.platformPool.getFirstDead();
        if (!this.currentPlatform) {
          this.currentPlatform = new MrHop.Platform(this.game, this.floorPool, nextPlatformData.numTiles, 
-                                                 this.game.world.width + nextPlatformData.separation, nextPlatformData.y, -this.levelSpeed);
+                                                 this.game.world.width + nextPlatformData.separation, nextPlatformData.y, -this.levelSpeed, this.coinsPool);
        } else {
          this.currentPlatform.prepare(nextPlatformData.numTiles, this.game.world.width + nextPlatformData.separation, 
-                                      nextPlatformData.y, -this.levelSpeed)
+                                      nextPlatformData.y, -this.levelSpeed, this.coinsPool)
        }
        
        this.platformPool.add(this.currentPlatform);
