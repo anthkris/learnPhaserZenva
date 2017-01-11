@@ -67,7 +67,8 @@ ZPlat.GameState = {
     this.collisionLayer.resizeWorld();
     
     //create player
-    this.player = this.add.sprite(300, 0, 'player', 3);
+    this.playerArr = this.findObjectsByType('player', this.map, 'objectsLayer');
+    this.player = this.add.sprite(this.playerArr[0].x, this.playerArr[0].y, 'player', 3);
     this.player.anchor.setTo(0.5);
     this.player.animations.add('walking', [0, 1, 2, 1], 6, true);
     this.game.physics.arcade.enable(this.player);
@@ -137,5 +138,17 @@ ZPlat.GameState = {
     this.rightArrow.events.onInputOut.add(function(){
       this.player.customParams.isMovingRight = false;
     }, this);
-  }  
+  },
+  findObjectsByType: function(targetType, tilemap, layer) {
+    var result = [];
+    console.log(tilemap.objects[layer]);
+    tilemap.objects[layer].forEach(function(element){
+      if(element.properties.type === targetType) {
+        //translate the difference between phaser y and Tiled y
+        element.y -= tilemap.tileHeight;
+        result.push(element);
+      }
+    }, this);
+    return result;
+  }
 };

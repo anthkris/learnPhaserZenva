@@ -20,7 +20,7 @@ ZPlat.PreloadState = {
     this.load.image('actionButton', 'assets/images/actionButton.png'); 
     
     this.load.image('gameTiles', 'assets/images/tiles_spritesheet.png');
-    this.load.tilemap('level1', 'assets/levels/demo-level.json', null, Phaser.Tilemap.TILED_JSON);
+    this.load.tilemap('level1', 'assets/levels/demo-level2.json', null, Phaser.Tilemap.TILED_JSON);
 
   },
   create: function() {

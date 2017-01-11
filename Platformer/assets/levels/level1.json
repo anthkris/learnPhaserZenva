@@ -62,8 +62,8 @@
                  "name":"",
                  "properties":
                     {
-                     "speed":"120",
-                     "type":"enemy"
+                     "type":"enemy",
+                     "velocity":"120"
                     },
                  "type":"",
                  "visible":true,
