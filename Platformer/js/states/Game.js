@@ -2,11 +2,14 @@ var ZPlat = ZPlat || {};
 
 ZPlat.GameState = {
 
-  init: function() {    
+  init: function(level) {
+    
+    this.currentLevel = level || 'level1';
 
     //constants
     this.RUNNING_SPEED = 180;
     this.JUMPING_SPEED = 500;
+    this.BOUNCING_SPEED = 150;
 
     //gravity
     this.game.physics.arcade.gravity.y = 1000;    
@@ -22,8 +25,12 @@ ZPlat.GameState = {
     this.createOnscreenControls();    
   },   
   update: function() {    
-    this.game.physics.arcade.collide(this.player, this.collisionLayer); 
-
+    this.game.physics.arcade.collide(this.player, this.collisionLayer);
+    this.game.physics.arcade.collide(this.enemies, this.collisionLayer);
+    
+    this.game.physics.arcade.collide(this.player, this.enemies, this.hitEnemy, null, this);
+    
+    this.game.physics.arcade.overlap(this.player, this.goal, this.changeLevel, null, this); 
     this.player.body.velocity.x = 0;
 
     if(this.cursors.left.isDown || this.player.customParams.isMovingLeft) {
@@ -45,9 +52,14 @@ ZPlat.GameState = {
       this.player.body.velocity.y = -this.JUMPING_SPEED;
       this.player.customParams.mustJump = false;
     }
+    
+    //kill player if he falls off
+    if(this.player.bottom === this.game.world.height) {
+      this.gameOver();
+    }
   },
   loadLevel: function(){  
-    this.map = this.add.tilemap('level1');
+    this.map = this.add.tilemap(this.currentLevel);
     
     //join tile images to json data
     this.map.addTilesetImage('tiles_spritesheet', 'gameTiles');
@@ -66,6 +78,15 @@ ZPlat.GameState = {
     //use the layer that is the biggest
     this.collisionLayer.resizeWorld();
     
+    //create goal
+    this.goalArr = this.findObjectsByType('goal', this.map, 'objectsLayer');
+    //note that you can also code the key as a property in the object in Tile
+    this.goal = this.add.sprite(this.goalArr[0].x, this.goalArr[0].y, 'goal');
+    this.game.physics.arcade.enable(this.goal);
+    this.goal.body.allowGravity = false;
+    this.goal.nextLevel = this.goalArr[0].properties.nextLevel;
+    
+    
     //create player
     this.playerArr = this.findObjectsByType('player', this.map, 'objectsLayer');
     this.player = this.add.sprite(this.playerArr[0].x, this.playerArr[0].y, 'player', 3);
@@ -83,6 +104,13 @@ ZPlat.GameState = {
 
     //follow player with the camera
     this.game.camera.follow(this.player);
+    
+    //create enemies
+    this.enemies = this.add.group();
+    
+    //var sampleEnemy = new ZPlat.Enemy(this.game, 100, 300, 'slime', undefined, this.map);
+    this.createEnemies();
+    //this.enemies.add(sampleEnemy);
   },
   createOnscreenControls: function(){
     this.leftArrow = this.add.button(20, this.game.height - 60, 'arrowButton');
@@ -150,5 +178,32 @@ ZPlat.GameState = {
       }
     }, this);
     return result;
+  },
+  changeLevel: function(player, goal) {
+    //you could pass an object with info like player coordinates, 
+    //coin coordinates, lives left, etc
+    this.game.state.start('Game', true, false, goal.nextLevel);
+  },
+  createEnemies: function() {
+    this.enemyArr = this.findObjectsByType('enemy', this.map, 'objectsLayer');
+    var enemy;
+    console.log(this.enemyArr);
+    this.enemyArr.forEach(function(element) {
+      //Remember that the Tiled element properties will be strings
+      //so add plus to velocity to make it a number
+      enemy = new ZPlat.Enemy(this.game, element.x, element.y, 'slime', +element.properties.velocity, this.map);
+      this.enemies.add(enemy);
+    }, this);
+  },
+  hitEnemy: function(player, enemy) {
+    if(enemy.body.touching.up) {
+      enemy.kill();
+      player.body.velocity.y = -this.BOUNCING_SPEED;
+    } else {
+      this.gameOver();
+    }
+  },
+  gameOver: function(){
+    this.game.state.start('Game', true, false, this.currentLevel);
   }
 };
