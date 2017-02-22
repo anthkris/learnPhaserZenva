@@ -65,7 +65,7 @@ MrHop.GameState = {
   },   
   update: function() {
     if (this.player.alive) {
-      this.platformPool.forEachAlive(function(platform, index){
+      this.platformPool.forEachAlive(function(platform, index) {
         this.game.physics.arcade.collide(this.player, platform);
         
         //check if platform needs to be killed
